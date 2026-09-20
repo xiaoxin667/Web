@@ -1,6 +1,7 @@
 ﻿// 整个项目使用UTF-8编码，如果出现乱码在其他编译器当中，需更改为使用utf-8编码打开
 #include <Windows.h>
 #include <Windowsx.h> // 用于获取鼠标的坐标信息
+#include "tool.h"
 
 // 定义全局变量
 POINT g_last = {}; 
@@ -28,6 +29,15 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 		// 存放鼠标坐标
 		POINT p = { GET_X_LPARAM(lp), GET_Y_LPARAM(lp) };
 		HDC hdc = GetDC(hwnd);
+
+		// 根据当前工具创建画笔
+		HPEN hPen;
+		if (g_tool == TOOL_ERASER)
+			hPen = CreatePen(PS_SOLID, 20, g_bgCOLOR);
+		else
+			hPen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
+		HPEN hOld = (HPEN)SelectObject(hdc, hPen);
+
 		MoveToEx(hdc, g_last.x, g_last.y, nullptr);
 		LineTo(hdc, p.x, p.y);
 		ReleaseDC(hwnd, hdc);
@@ -39,6 +49,11 @@ LRESULT CALLBACK WinProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 	{
 		g_drawing = false;
 		ReleaseCapture();
+		return 0;
+	}
+	case WM_KEYDOWN:
+	{
+		if (wp == 'E') g_tool = (g_tool == TOOL_PEN) ? TOOL_ERASER : TOOL_PEN;
 		return 0;
 	}
 	case WM_DESTROY:
