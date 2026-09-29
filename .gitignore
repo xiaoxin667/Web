@@ -1,0 +1,7 @@
+.gitignore
+.git
+.claude/
+.vscode/
+
+*.o
+cacu
